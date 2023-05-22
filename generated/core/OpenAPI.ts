@@ -21,7 +21,7 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-  BASE: "http://localhost:3000",
+  BASE: window.location.hostname === "localhost" ? "http://localhost:3000" : "https://164.92.180.13:3000",
   VERSION: "1.0",
   WITH_CREDENTIALS: false,
   CREDENTIALS: "include",
