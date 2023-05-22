@@ -78,7 +78,7 @@ export default function BasicModal({
       code: parseInt(code),
     };
   
-    fetch('http://localhost:3000/auth/login', {
+    fetch(`${process.env.BACKEND_URL}/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {
