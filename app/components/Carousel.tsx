@@ -2,6 +2,7 @@
 import { DefaultService } from "@/generated";
 import { useEffect, useState } from "react";
 
+
 interface CarouselItem {
   imageUrl: string;
   title: string;

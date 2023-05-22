@@ -6,10 +6,7 @@ import { CommentEntity, DefaultService, Subcategory } from "@/generated";
 import { Box, Grid, Typography } from "@mui/material";
 import { useAtom } from "jotai";
 import Cookies from "js-cookie";
-import { Metadata } from "next";
-import { Basic } from "next/font/google";
 import { usePathname } from "next/navigation";
-import { comment } from "postcss";
 import { SetStateAction, useCallback, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 
@@ -19,7 +16,7 @@ interface Video {
 // type Subcategory = { name: string; videos: Video[] };
 type SubcategoryWithVideos = Omit<Subcategory, "videos"> & { videos: Video[] };
 
-export default function SubcategoriesContent({ slugSub }: { slugSub: string }) {
+export default function SubcategoriesContent() {
   const pathname = usePathname();
   const slug = pathname.split("/").pop();
   const [subcategorу, setSubcategory] = useState<SubcategoryWithVideos | null>(
@@ -36,6 +33,28 @@ export default function SubcategoriesContent({ slugSub }: { slugSub: string }) {
       }
     });
   }, []);
+  const [auth, setAuth] = useAtom(authAtom);
+  const [isDayMode, setIsDayMode] = useState(false);
+
+
+  useEffect(() => {
+    const accessToken = Cookies.get("accessToken");
+    const refreshToken = Cookies.get("refreshToken");
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setAuth({
+      isAuthenticated: Boolean(accessToken),
+      authToken: accessToken || "",
+      refreshToken: refreshToken || "",
+      userId: "",
+    });
+  }, [setAuth]);
+
+  useEffect(() => {
+    if (!auth.isAuthenticated) {
+      console.log("Вы не авторизованы");
+    }
+  }, [auth]);
 
   useEffect(() => {
     if (slug) {
@@ -58,80 +77,110 @@ export default function SubcategoriesContent({ slugSub }: { slugSub: string }) {
     }
   }, [slug]);
 
+  useEffect(() => {
+    const matcher = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const updateDayMode = () => {
+      setIsDayMode(!matcher.matches);
+    };
+
+    // Установите режим при первоначальной загрузке
+    updateDayMode();
+
+    // Добавьте слушатель для отслеживания изменений
+    matcher.addListener(updateDayMode);
+
+    // Очистите слушатель при размонтировании компонента
+    return () => {
+      matcher.removeListener(updateDayMode);
+    };
+  }, []);
+
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
   return (
     <div>
-      <Grid item xs={12}>
-        <Box
-          margin="auto"
-          marginTop={8}
-          textAlign="left"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <h1>{subcategorу?.name}</h1>
-          <div>
-            {subcategorу?.videos && subcategorу.videos.length > 0 && (
-              <ReactPlayer
-                url={subcategorу.videos[currentVideoIndex].url}
-                width="80rem"
-                height="60rem"
-                controls
-              />
-            )}
-          </div>
-          <div>
-            {subcategorу?.videos &&
-              subcategorу.videos.map(
-                (_video: { url: string }, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentVideoIndex(index)}
-                    style={{
-                      margin: "5px",
-                      backgroundColor:
-                        currentVideoIndex === index ? "blue" : "white",
-                    }}
-                  >
-                    Видео {index + 1}
-                  </button>
-                )
+      {auth.isAuthenticated ? (
+      <><Grid item xs={12}>
+          <Box
+            margin="auto"
+            marginTop={8}
+            textAlign="left"
+            maxWidth="100rem"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <h1>{subcategorу?.name}</h1>
+            <div className="aspect-w-16 aspect-h-9 w-full lg:w-[50rem] h-[30rem] md:h-[40rem] sm:h-[20rem] lg:h-[50rem] max-h-screen">
+              {subcategorу?.videos && subcategorу.videos.length > 0 && (
+                <ReactPlayer
+                  url={subcategorу.videos[currentVideoIndex].url}
+                  width="100%"
+                  height="100%"
+                  controls />
               )}
-          </div>
-        </Box>
-      </Grid>
-      <Grid item xs={12}>
-        <BasicTabs
-          value={value}
-          onChange={handleChange}
-          tab1Content={
-            <Typography variant="h4">{subcategorу?.description}</Typography>
-          }
-          tab2Content={
-            <Typography sx={{ padding: 0 }}>
-              {subcategorу?.comments && Array.isArray(subcategorу?.comments) ? (
-                <CommentsSection
-                  key={subcategorу.id}
-                  comments={subcategorу.comments}
-                  onNewReply={() => {}}
-                  setComments={setComments}
-
-                  //   setComments={setComments}
-                />
-              ) : (
-                <div>No comments</div>
-              )}
+            </div>
+            <div>
+              {subcategorу?.videos &&
+                subcategorу.videos.map(
+                  (_video: { url: string; }, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentVideoIndex(index)}
+                      style={{
+                        margin: "5px",
+                        backgroundColor: currentVideoIndex === index ? "blue" : "white",
+                      }}
+                    >
+                      Видео {index + 1}
+                    </button>
+                  )
+                )}
+            </div>
+          </Box>
+        </Grid><Grid item xs={12} sm={10} md={8} lg={6} xl={4}>
+            <BasicTabs
+              value={value}
+              onChange={handleChange}
+              tab1Content={<Typography variant="h4">{subcategorу?.description}</Typography>}
+              tab2Content={<Typography sx={{ padding: 0, color: isDayMode ? 'black' : 'white' }}>
+                {subcategorу?.comments && Array.isArray(subcategorу?.comments) ? (
+                  <CommentsSection
+                    key={subcategorу.id}
+                    comments={subcategorу.comments}
+                    onNewReply={() => { } }
+                    setComments={setComments} />
+                ) : (
+                  <div className={`color: isDayMode ? 'black' : 'white' `}>No comments</div>
+                )}
+              </Typography>}
+              tab3Content={<div>Шаблон документа</div>} />
+          </Grid></>
+      ) : (
+        <Grid item xs={12}>
+          <Box
+            margin="auto"
+            marginTop={8}
+            textAlign="center"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <Typography variant="h4">
+              Пожалуйста, войдите или зарегистрируйтесь, чтобы просматривать этот контент
             </Typography>
-          }
-          tab3Content={<div>Шаблон документа</div>}
-        />
-      </Grid>
+          </Box>
+        </Grid>
+      )}
     </div>
   );
 }

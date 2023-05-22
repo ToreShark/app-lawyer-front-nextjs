@@ -50,14 +50,14 @@ const CommentsSection: FC<Props> = ({ comments, onNewReply, setComments }) => {
                 <div key={index} className="commentBox">
                     <p>
                         <strong>
-                            {comment.user && comment.user.firstName}:
+                            {comment.user && comment.user.firstName ? comment.user.firstName : 'Гость'}:
                         </strong>
                         {comment.content}
                     </p>
                     <p>
                         {new Date(comment.created_at).toLocaleString()}
                         <button onClick={() => handleLike(comment.id, auth.userId)}><ThumbUpIcon /></button>
-                        {/* <span>{comment.likes ?? 0}</span> */}
+                        <span>{comment.votes ? comment.votes.filter(vote => vote.value === true).length : 0}</span>
                         <button onClick={() => handleDislike(comment.id, auth.userId)}><ThumbDownAltIcon /></button>
                     </p>
                     <p>

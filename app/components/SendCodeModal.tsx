@@ -13,6 +13,7 @@ import {
   phoneLocalAtom,
 } from "../state/utils/utilsAtom";
 import { DefaultService, SignInUserDto } from "@/generated";
+import { authAtom } from "../state/atoms/atom";
 
 const style = {
   position: "absolute" as "absolute",
@@ -41,18 +42,20 @@ export default function BasicModal({
   const [isSignIn, setIsSignIn] = useAtom(isSignInAtom);
   const [isSignUp, setIsSignUp] = useAtom(isSignUpAtom);
   const [openOn, setOpenOn] = useState(false);
+  const [auth, setAuth] = useAtom(authAtom);
   //   const [isModalOpen, setIsModalOpen] = React.useState(false);
   //   const handleOpen = () => setIsModalOpen(true);
   //   const handleClose = () => setIsModalOpen(false);
 
-  const [seconds, setSeconds] = useState(getDiffTimeLocalStorage());
 
-  function getDiffTimeLocalStorage() {
+  const getDiffTimeLocalStorage = React.useCallback(() => {
     const now = Date.now();
     const diff = now - (lastTimeOtp || 0);
     const diffSeconds = Math.floor(diff / 1000);
     return diffSeconds < 60 ? 60 - diffSeconds : 0;
-  }
+  }, [lastTimeOtp]);
+  
+  const [seconds, setSeconds] = useState(getDiffTimeLocalStorage());
 
   React.useEffect(() => {
     setSeconds(getDiffTimeLocalStorage());
@@ -60,7 +63,8 @@ export default function BasicModal({
       setSeconds((seconds) => seconds - 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [lastTimeOtp]);
+  }, [lastTimeOtp, getDiffTimeLocalStorage]);
+  
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,6 +97,12 @@ export default function BasicModal({
       if (onLoginSuccess) {
         onLoginSuccess();
       }
+      setAuth({
+        isAuthenticated: true,
+        authToken: data.accessToken, 
+        refreshToken: data.refreshToken,
+        userId: data.userId
+      });
       setOpenOn(false); // закрываем модальное окно после успешного входа
       setCode(""); // очищаем поле ввода кода
       onClose(); // закрываем модальное окно после успешного входа
