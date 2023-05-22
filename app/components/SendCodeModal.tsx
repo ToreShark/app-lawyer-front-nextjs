@@ -78,7 +78,7 @@ export default function BasicModal({
       code: parseInt(code),
     };
   
-    fetch(`${process.env.BACKEND_URL}/auth/login`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {
