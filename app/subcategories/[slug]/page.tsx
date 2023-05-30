@@ -1,7 +1,7 @@
 "use client";
 import NavBar from "../../components/NavBar";
 //@ts-ignore
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { FC, useEffect, useState } from "react";
 import { Category, DefaultService, Subcategory } from "@/generated";
 import Link from "next/link";
@@ -72,7 +72,7 @@ export default function SubcategoriesPage() {
       refreshToken: refreshToken || "",
       userId: "",
     });
-  }, [isAuthenticated, Cookies.get("accessToken")]);
+  }, []);
   
   return (
     <>

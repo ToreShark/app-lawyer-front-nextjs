@@ -7,13 +7,14 @@ import { useAtom } from "jotai";
 import { authAtom } from "../state/atoms/atom";
 import Cookies from "js-cookie";
 import { DefaultService } from "@/generated";
-import { cookies } from "next/dist/client/components/headers";
+import { usePathname } from "next/navigation";
 
 export default function NavBar() {
   const [nav, setNav] = useState(true);
   const [isDayMode, setIsDayMode] = useState(false);
   const [auth, setAuth] = useAtom(authAtom);
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated);
+  const pathname = usePathname();
 
   const handleNav = () => {
     setNav(!nav);
@@ -35,9 +36,11 @@ export default function NavBar() {
       refreshToken: refreshToken || "",
       userId: "",
     });
-  }, []);
+  }, [pathname]);
 
-  const handleLogout = async () => {
+  console.log(pathname);
+
+  const handleLogout = () => {
     try {
       DefaultService.authControllerLogout(); // Вызовите метод authControllerLogout
       //
