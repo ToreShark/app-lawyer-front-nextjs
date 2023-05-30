@@ -44,7 +44,8 @@ export default function NavBar() {
     try {
       DefaultService.authControllerLogout(); // Вызовите метод authControllerLogout
       //
-      Cookies.remove("accessToken");
+      Cookies.remove('accessToken', { path: '/', domain: 'primelegal.kz' })
+
       setIsAuthenticated(false);
       console.log("isAuthenticated", isAuthenticated);
       console.log("Выход выполнен");
